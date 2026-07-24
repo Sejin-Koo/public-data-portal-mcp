@@ -1,0 +1,18 @@
+{
+  "name": "public-data-portal-mcp",
+  "version": "1.0.0",
+  "description": "나라장터·방위사업청·수자원공사 등 공공데이터포털 입찰/조달 정보를 업무 로직(중복제거 포함)까지 감싸서 제공하는 MCP 서버",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "zod": "^4.4.3",
+    "fast-xml-parser": "^4.5.0"
+  }
+}
