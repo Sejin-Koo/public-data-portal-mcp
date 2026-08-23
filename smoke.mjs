@@ -68,3 +68,12 @@ await run("search_health_functional_food", { companyName: "일동", productName:
 await run("search_health_functional_food", { companyName: "일동", limit: 3, detail: false }); // 목록만
 await run("search_health_functional_food", { companyName: "존재하지않는업체명XYZ", limit: 3 }); // 0건 안내 경로
 await run("search_health_functional_food", { statementNo: "20140017002183" });                // 신고번호 직접
+
+// ── 허가정보 신규 2종 + 성분 표기 요동 폴백 검증 (2026-08-23) ──
+await run("search_drug_permission", { mainIngredient: "콘드로이친", limit: 5 });   // 어간 폴백 발동 기대
+await run("search_drug_permission", { mainIngredient: "아세트아미노펜", limit: 3 }); // 폴백 불필요 기대
+await run("search_drug_permission_list", { ingredientEnglish: "Chondroitin", limit: 5 });
+await run("search_drug_permission_list", { ingredientEnglish: "chondroitin", limit: 3 }); // 대소문자 0건
+await run("search_drug_ingredients", { productName: "토비콤캅셀", limit: 10 });
+await run("search_drug_ingredients", { productName: "존재하지않는제품XYZ", limit: 3 });
+await run("search_pill_identification", { itemName: "타이레놀", bizrno: "1188104188", limit: 3 });
