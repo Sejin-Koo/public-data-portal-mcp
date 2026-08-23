@@ -60,3 +60,11 @@ await run("search_drug_easy_info", { itemName: "타이레놀", limit: 3 });
 // 안내 경로 3 — e약은요에 없는 성분어를 제품명으로 넣었을 때 0건이 정상 처리되는지
 await run("search_drug_easy_info", { itemName: "콘드로이친", limit: 3 });
 await run("search_pill_identification", { itemName: "타이레놀", limit: 3 });
+
+// ── 건강기능식품 오퍼레이션 분기 검증 (2026-08-23 추가) ──
+await run("search_health_functional_food", { productName: "콘드로이친", limit: 3 });          // 상세조회 단일 경로
+await run("search_health_functional_food", { companyName: "일동", limit: 3 });                // 목록→상세 병합
+await run("search_health_functional_food", { companyName: "일동", productName: "유산균", limit: 3 });
+await run("search_health_functional_food", { companyName: "일동", limit: 3, detail: false }); // 목록만
+await run("search_health_functional_food", { companyName: "존재하지않는업체명XYZ", limit: 3 }); // 0건 안내 경로
+await run("search_health_functional_food", { statementNo: "20140017002183" });                // 신고번호 직접
