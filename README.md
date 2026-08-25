@@ -20,11 +20,18 @@ Endpoint: https://public-data-portal-mcp.vercel.app/api/mcp
 Vercel에 이 저장소를 Import한 뒤, 프로젝트 환경변수에 아래를 반드시 설정해야 합니다:
 
 ```
-PUBLIC_DATA_PORTAL_KEY = dFOHKPhz0ybhuOwgHz4/RpblYq45XwKHbhmfZ7DcFdm9RPIcJVp/TBftLD2GM/21VsO6cvxfYmBq0WqNZSHNTg==
+PUBLIC_DATA_PORTAL_KEY = <공공데이터포털 일반 인증키(디코딩 값)>
+DART_API_KEY           = <OpenDART 인증키>
 ```
 
-(공공데이터포털 일반 인증키 디코딩 값. URL 인코딩은 서버 코드(`qs()`)가 자동으로 처리하므로
-디코딩된 값 그대로 넣으면 됩니다.)
+`PUBLIC_DATA_PORTAL_KEY`는 공공데이터포털 일반 인증키의 **디코딩 값**입니다. URL 인코딩은
+서버 코드(`qs()`)가 자동으로 처리하므로 디코딩된 값 그대로 넣으면 됩니다.
+
+`DART_API_KEY`는 `get_employment_insurance_workplace`가 회사명을 사업자등록번호 10자리로
+해석할 때만 씁니다. 없어도 서버는 동작하며, 그 경우 회사명 대신 `bizNo`를 직접 넘겨야 합니다.
+
+★ 실제 키 값은 이 저장소에 적지 마세요. 저장소가 공개이므로 커밋된 값은 즉시 노출되고,
+파일을 고쳐도 git 히스토리에는 그대로 남습니다. 값은 Vercel 프로젝트 환경변수에만 둡니다.
 
 ## 제공 도구 6개
 
