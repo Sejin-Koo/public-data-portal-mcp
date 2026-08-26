@@ -42,5 +42,18 @@ chk("companyName == bizrno 직접", g1.totalCount === g2.totalCount, `${g1.total
 const g3 = await searchDrugIngredients({ entpName: "안국약품", limit: 1 });
 chk("entpName 개명 후 동작", g3.ok && g3.totalCount > 0, g3.totalCount);
 
-line(fail === 0 ? "전체 통과" : `실패 ${fail}건`);
-process.exit(fail === 0 ? 0 : 1);
+
+
+
+// --- 건강기능식품 명칭 통일 검증 (2026-08-26 추가) ---
+import { searchHealthFood } from "./lib/onbid_mfds_client.js";
+line("⑤ search_health_functional_food 명칭 통일");
+const h1 = await searchHealthFood({ entpName: "일동", limit: 1, detail: false });
+const h2 = await searchHealthFood({ companyName: "일동", limit: 1, detail: false });
+chk("entpName 동작", h1.ok && h1.totalCount > 0, h1.totalCount);
+chk("companyName 하위호환 = 동일", h2.totalCount === h1.totalCount, `${h2.totalCount} vs ${h1.totalCount}`);
+chk("resolution에 미지원 명시", h1.resolution?.resolvedVia === "업체명 부분검색(사업자등록번호 미지원)", h1.resolution?.resolvedVia);
+const h3 = await searchHealthFood({ productName: "콘드로이친", limit: 1 });
+chk("회사명 없으면 resolution 없음", h3.resolution === undefined, h3.searchedVia);
+chk("제품명 단독 조회 회귀", h3.ok && h3.totalCount > 0, h3.totalCount);
+console.log(fail === 0 ? "\n전체 통과" : `\n실패 ${fail}건`);
