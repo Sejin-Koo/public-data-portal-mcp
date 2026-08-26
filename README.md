@@ -30,9 +30,11 @@ DART_API_KEY    = <OpenDART 인증키>
 
 ★ **환경변수명이 `PUBLIC_DATA_PORTAL_KEY`에서 `DATA_PORTAL_KEY`로 바뀌었습니다(2026-08-26).**
 종전 이름의 "PUBLIC"은 "공공데이터포털(Public Data Portal)"의 약자였지만, Vercel은 `PUBLIC_`
-접두어를 "브라우저에 노출할 공개 변수"로 해석해 Secret 타입 저장을 거부합니다. 전환 중
-서비스가 끊기지 않도록 서버는 **두 이름을 모두 인정**하며, 새 이름을 우선합니다.
-어느 이름으로 읽혔는지는 `list_agencies` 도구의 `keySource`로 확인할 수 있습니다.
+접두어를 "브라우저에 노출할 공개 변수"로 해석해 Secret 타입 저장을 거부합니다. 전환이
+끝났으므로 **옛 이름은 더 이상 인식하지 않습니다.** 옛 이름으로 되돌리지 마세요.
+
+키가 설정됐는지는 `list_agencies` 도구의 `keyConfigured`·`keySource`로 확인할 수 있습니다
+(키 값 자체는 반환하지 않습니다). 조회가 전부 실패하는데 원인을 모르겠으면 여기부터 보세요.
 
 `DART_API_KEY`는 `get_employment_insurance_workplace`가 회사명을 사업자등록번호 10자리로
 해석할 때만 씁니다. 없어도 서버는 동작하며, 그 경우 회사명 대신 `bizNo`를 직접 넘겨야 합니다.
