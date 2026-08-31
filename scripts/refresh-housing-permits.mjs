@@ -60,8 +60,30 @@ function mergeCookies(res) {
   COOKIE = Array.from(jar.entries()).map(([k, v]) => `${k}=${v}`).join("; ");
 }
 
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// 연결 단계 실패(fetch failed)만 재시도한다. HTTP 4xx/5xx는 그대로 던진다 —
+// 재시도해도 같은 결과이고, 원인 판별을 흐리기만 한다.
+async function withRetry(label, fn, tries = 3) {
+  let last;
+  for (let i = 1; i <= tries; i++) {
+    try {
+      return await fn();
+    } catch (e) {
+      if (!e.cause) throw e;
+      last = e;
+      const code = e.cause.code || e.cause.message || "unknown";
+      console.warn(`  ${label} 연결 실패 (${i}/${tries}): ${code}`);
+      if (i < tries) await sleep(3000 * i);
+    }
+  }
+  throw last;
+}
+
 async function get(url) {
-  const res = await fetch(url, { headers: { "User-Agent": UA, Cookie: COOKIE } });
+  const res = await withRetry("GET", () =>
+    fetch(url, { headers: { "User-Agent": UA, Cookie: COOKIE }, signal: AbortSignal.timeout(120000) })
+  );
   mergeCookies(res);
   if (!res.ok) throw new Error(`GET ${url} → HTTP ${res.status}`);
   return res.text();
@@ -255,5 +277,15 @@ function main() {
 
 main().catch((e) => {
   console.error("실패:", e.message);
+  // ★ Node의 fetch는 연결 단계 실패를 전부 "fetch failed" 한 줄로 뭉갠다.
+  //   실제 원인(ETIMEDOUT·ECONNRESET·ENOTFOUND·인증서 오류)은 cause에만 있으므로
+  //   반드시 함께 출력한다. 이게 없으면 원격 러너에서 원인 판별이 불가능하다.
+  let c = e.cause;
+  for (let i = 0; c && i < 4; i++) {
+    const parts = [c.code, c.errno, c.syscall, c.hostname, c.address, c.port, c.message]
+      .filter((x) => x !== undefined && x !== null && x !== "");
+    console.error(`  cause[${i}]:`, parts.join(" | "));
+    c = c.cause;
+  }
   process.exit(1);
 });
