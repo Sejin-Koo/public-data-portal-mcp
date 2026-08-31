@@ -1,0 +1,70 @@
+name: Refresh housing_permits
+
+# 자동 커밋·push에 필요한 쓰기 권한. 기본 GITHUB_TOKEN은 읽기 전용이라
+# 이 선언이 없으면 push가 exit code 128로 실패한다.
+permissions:
+  contents: write
+
+on:
+  schedule:
+    # 매주 일요일 23:00 KST (= 14:00 UTC). 아래 "마지막 일요일 판정" 스텝이
+    # 이번 달 마지막 일요일이 아니면 그대로 종료시킨다.
+    # cron에 day-of-month와 day-of-week를 함께 쓰면 OR 조건이 되어
+    # "25~31일 매일 OR 매주 일요일"이 되므로, 날짜 조건은 잡 안에서 판정한다.
+    - cron: "0 14 * * 0"
+  workflow_dispatch: {}
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check last Sunday of month
+        id: gate
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+            echo "manual run - gate skipped"
+            exit 0
+          fi
+          TODAY_M=$(TZ=Asia/Seoul date +%m)
+          NEXT_M=$(TZ=Asia/Seoul date -d "+7 days" +%m)
+          if [ "$TODAY_M" != "$NEXT_M" ]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+            echo "last Sunday of month - proceed"
+          else
+            echo "run=false" >> "$GITHUB_OUTPUT"
+            echo "not the last Sunday - skip"
+          fi
+
+      - name: Checkout
+        if: steps.gate.outputs.run == 'true'
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        if: steps.gate.outputs.run == 'true'
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+
+      - name: Install dependencies
+        if: steps.gate.outputs.run == 'true'
+        run: npm install --omit=dev --no-save adm-zip
+
+      - name: Refresh housing_permits snapshot
+        if: steps.gate.outputs.run == 'true'
+        run: node scripts/refresh-housing-permits.mjs
+
+      - name: Commit and push if changed
+        if: steps.gate.outputs.run == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet -- data/housing_permits.json.gz; then
+            echo "no change - skip commit"
+          else
+            YM=$(node -e "const{gunzipSync}=require('zlib'),fs=require('fs');console.log(JSON.parse(gunzipSync(fs.readFileSync('data/housing_permits.json.gz')).toString('utf-8')).기준월)")
+            CNT=$(node -e "const{gunzipSync}=require('zlib'),fs=require('fs');console.log(JSON.parse(gunzipSync(fs.readFileSync('data/housing_permits.json.gz')).toString('utf-8')).건수)")
+            git add data/housing_permits.json.gz
+            git commit -m "chore: 주택인허가 전수 스냅샷 자동 갱신 (기준월 ${YM}, ${CNT}단지)"
+            git push
+          fi
