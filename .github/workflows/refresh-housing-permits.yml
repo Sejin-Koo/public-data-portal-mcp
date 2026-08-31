@@ -7,8 +7,9 @@ permissions:
 
 on:
   schedule:
-    # 매주 일요일 23:00 KST (= 14:00 UTC). 아래 "마지막 일요일 판정" 스텝이
-    # 이번 달 마지막 일요일이 아니면 그대로 종료시킨다.
+    # 매주 일요일 23:00 KST (= 14:00 UTC).
+    #  - Qdrant keep-alive 스텝은 게이트 앞에 있어 "매주" 실행된다.
+    #  - 스냅샷 갱신은 아래 "마지막 일요일 판정"을 통과한 주에만 실행된다.
     # cron에 day-of-month와 day-of-week를 함께 쓰면 OR 조건이 되어
     # "25~31일 매일 OR 매주 일요일"이 되므로, 날짜 조건은 잡 안에서 판정한다.
     - cron: "0 14 * * 0"
@@ -18,6 +19,33 @@ jobs:
   refresh:
     runs-on: ubuntu-latest
     steps:
+      # ── Qdrant 무료 티어는 미사용이 쌓이면 정지(SUSPENDED)되고, 정지 알림
+      #    수신 3주 뒤 자동 삭제된다. 주 1회 컬렉션 목록을 호출해 사용 기록을
+      #    남겨 정지를 막는다. 실패해도 아래 스냅샷 갱신은 그대로 진행한다.
+      #    ★ 정지된 클러스터는 인증키 없이도 모든 경로가 404라서 삭제된
+      #      클러스터와 응답이 구분되지 않는다. 아래 경고가 뜨면 Qdrant Cloud
+      #      콘솔에서 상태를 직접 확인할 것.
+      - name: Qdrant keep-alive (weekly)
+        continue-on-error: true
+        env:
+          QDRANT_URL: ${{ secrets.QDRANT_URL }}
+          QDRANT_API_KEY: ${{ secrets.QDRANT_API_KEY }}
+        run: |
+          if [ -z "$QDRANT_URL" ] || [ -z "$QDRANT_API_KEY" ]; then
+            echo "QDRANT_URL / QDRANT_API_KEY secret not set - keep-alive skipped"
+            exit 0
+          fi
+          CODE=$(curl -s -o /tmp/qdrant.json -w "%{http_code}" --max-time 30 \
+            "${QDRANT_URL%/}/collections" -H "api-key: ${QDRANT_API_KEY}")
+          echo "HTTP ${CODE}"
+          if [ "${CODE}" = "200" ]; then
+            echo "collections:"
+            grep -o '"name":"[^"]*"' /tmp/qdrant.json || echo "(none)"
+          else
+            echo "::warning::Qdrant keep-alive failed (HTTP ${CODE}). Cluster may be suspended - check the Qdrant Cloud console."
+            head -c 300 /tmp/qdrant.json || true
+          fi
+
       - name: Check last Sunday of month
         id: gate
         run: |
