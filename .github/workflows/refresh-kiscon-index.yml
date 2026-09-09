@@ -1,0 +1,69 @@
+name: Refresh kiscon_bizno_index
+
+# 자동 커밋·push에 필요한 쓰기 권한. 기본 GITHUB_TOKEN은 읽기 전용이라
+# 이 선언이 없으면 push가 exit code 128로 실패한다.
+permissions:
+  contents: write
+
+on:
+  schedule:
+    # 매월 2일 05:00 KST (= 1일 20:00 UTC).
+    # 키스콘 공시는 매일 갱신되므로 특정 날짜를 기다릴 이유가 없다. 월초로 잡아
+    # "지난달분이 모두 들어온 뒤"에 돌게 한다. GitHub Actions cron은 L(말일) 같은
+    # 확장 문법을 지원하지 않으므로 날짜를 못박는다.
+    - cron: "0 20 1 * *"
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "increment = 최근 N개월 누적 병합 / backfill = 2003년부터 전량 재수집"
+        type: choice
+        options: [increment, backfill]
+        default: increment
+      months:
+        description: "increment일 때 되돌아볼 개월 수 (기본 2)"
+        default: "2"
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    # 백필은 70만 행·70여 페이지라 20분을 넘길 수 있다. 기본 6시간 상한은 그대로 두되
+    # 무한정 매달리지 않도록 넉넉한 상한만 건다.
+    timeout-minutes: 90
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+
+      # 이 스크립트는 외부 패키지를 쓰지 않는다(fetch·zlib 모두 Node 내장). npm install 불필요.
+      - name: Refresh kiscon bizno index
+        env:
+          DATA_PORTAL_KEY: ${{ secrets.DATA_PORTAL_KEY }}
+        run: |
+          if [ -z "$DATA_PORTAL_KEY" ]; then
+            echo "::error::DATA_PORTAL_KEY secret not set"
+            exit 1
+          fi
+          MODE="${{ github.event.inputs.mode }}"
+          MONTHS="${{ github.event.inputs.months }}"
+          if [ "$MODE" = "backfill" ]; then
+            node scripts/refresh-kiscon-index.mjs --backfill
+          else
+            node scripts/refresh-kiscon-index.mjs --months "${MONTHS:-2}"
+          fi
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet -- data/kiscon_bizno_index.json.gz; then
+            echo "no change - skip commit"
+          else
+            CNT=$(node -e "const{gunzipSync}=require('zlib'),fs=require('fs');console.log(JSON.parse(gunzipSync(fs.readFileSync('data/kiscon_bizno_index.json.gz')).toString('utf-8')).count)")
+            git add data/kiscon_bizno_index.json.gz
+            git commit -m "chore: 키스콘 사업자번호 색인 자동 갱신 (수록 ${CNT}개사)"
+            git push
+          fi
