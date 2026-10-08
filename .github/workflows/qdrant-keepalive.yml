@@ -1,0 +1,37 @@
+name: Qdrant keep-alive
+
+# Qdrant Cloud 무료 티어는 미사용이 쌓이면 정지(SUSPENDED)되고, 정지 알림 수신 3주 뒤 자동 삭제된다.
+# 주 1회 컬렉션 목록을 호출해 사용 기록을 남겨 정지를 막는다.
+# 2026-10-08 — 원래 refresh-housing-permits.yml 안의 스텝이었다. 주택인허가 스냅샷 갱신이
+# construction-mcp 저장소로 옮겨 가면서 이 스텝만 떼어 이 저장소에 남겼다(시크릿이 이 저장소에 있으므로).
+
+on:
+  schedule:
+    # 매주 일요일 23:00 KST (= 14:00 UTC) — 종전 스케줄 그대로
+    - cron: "0 14 * * 0"
+  workflow_dispatch: {}
+
+jobs:
+  keepalive:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Qdrant keep-alive (weekly)
+        continue-on-error: true
+        env:
+          QDRANT_URL: ${{ secrets.QDRANT_URL }}
+          QDRANT_API_KEY: ${{ secrets.QDRANT_API_KEY }}
+        run: |
+          if [ -z "$QDRANT_URL" ] || [ -z "$QDRANT_API_KEY" ]; then
+            echo "QDRANT_URL / QDRANT_API_KEY secret not set - keep-alive skipped"
+            exit 0
+          fi
+          CODE=$(curl -s -o /tmp/qdrant.json -w "%{http_code}" --max-time 30 \
+            "${QDRANT_URL%/}/collections" -H "api-key: ${QDRANT_API_KEY}")
+          echo "HTTP ${CODE}"
+          if [ "${CODE}" = "200" ]; then
+            echo "collections:"
+            grep -o '"name":"[^"]*"' /tmp/qdrant.json || echo "(none)"
+          else
+            echo "::warning::Qdrant keep-alive failed (HTTP ${CODE}). Cluster may be suspended - check the Qdrant Cloud console."
+            head -c 300 /tmp/qdrant.json || true
+          fi

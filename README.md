@@ -96,6 +96,12 @@ TCP 연결 후 곧바로 리셋됩니다(`ECONNRESET` — DNS 실패도 타임�
 
 ## 제공 도구
 
+> **2026-10-08 건설 도구 분리** — 키스콘·건설CALS·건축HUB 건축인허가·주택인허가·청약홈 도구 17개와
+> 주택인허가 전국 스냅샷(`data/housing_permits.json.gz`)·그 갱신 워크플로는 `construction-mcp` 저장소로
+> 옮겼다. 사업자번호 색인 2종(`corp_name_index`·`kiscon_bizno_index`)은 `resolve_bizno`가 쓰므로 이
+> 저장소에 남아 계속 갱신되고, `construction-mcp`가 주 1회 받아 간다. Qdrant keep-alive는
+> `qdrant-keepalive.yml`로 떼어 이 저장소에 남겼다.
+
 아래 목록은 서버 초기의 것으로, 이후 추가된 도구는 담고 있지 않습니다. 현행 목록은
 `lib/server.js`의 `server.tool(` 등록부를 보세요.
 
