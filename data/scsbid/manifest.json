@@ -1,0 +1,61 @@
+{
+ "updated": "2026-10-29 10:33 KST",
+ "retainWindows": 25,
+ "files": {
+  "cnstwk-202608.json.gz": {
+   "type": "공사",
+   "window": "202608",
+   "rows": 8191,
+   "complete": true,
+   "noticeJoined": 8191,
+   "kb": 798,
+   "builtAt": "2026-10-29 10:33 KST"
+  },
+  "cnstwk-202609.json.gz": {
+   "type": "공사",
+   "window": "202609",
+   "rows": 8641,
+   "complete": true,
+   "noticeJoined": 8641,
+   "kb": 846,
+   "builtAt": "2026-10-29 10:33 KST"
+  },
+  "cnstwk-202610.json.gz": {
+   "type": "공사",
+   "window": "202610",
+   "rows": 6683,
+   "complete": true,
+   "noticeJoined": 6683,
+   "kb": 631,
+   "builtAt": "2026-10-29 10:33 KST"
+  },
+  "servc-202608.json.gz": {
+   "type": "용역",
+   "window": "202608",
+   "rows": 8555,
+   "complete": true,
+   "noticeJoined": 8555,
+   "kb": 902,
+   "builtAt": "2026-10-29 10:33 KST"
+  },
+  "servc-202609.json.gz": {
+   "type": "용역",
+   "window": "202609",
+   "rows": 7631,
+   "complete": true,
+   "noticeJoined": 7631,
+   "kb": 801,
+   "builtAt": "2026-10-29 10:33 KST"
+  },
+  "servc-202610.json.gz": {
+   "type": "용역",
+   "window": "202610",
+   "rows": 4556,
+   "complete": true,
+   "noticeJoined": 4556,
+   "kb": 460,
+   "builtAt": "2026-10-29 10:33 KST"
+  }
+ },
+ "totalKB": 4438
+}
