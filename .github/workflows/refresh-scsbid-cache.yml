@@ -27,6 +27,9 @@ on:
       types:
         description: "업무구분 (cnstwk,servc)"
         default: "cnstwk,servc"
+      skip:
+        description: "백필을 나눌 때 건너뛸 최근 창 수 (예: 첫날 refresh months=12, 다음날 refresh months=13 skip=12)"
+        default: "0"
 
 concurrency:
   group: scsbid-cache
@@ -62,10 +65,13 @@ jobs:
           MODE="${{ github.event.inputs.mode }}"
           MONTHS="${{ github.event.inputs.months }}"
           TYPES="${{ github.event.inputs.types }}"
+          SKIP="${{ github.event.inputs.skip }}"
+          # TEMP(병합 전 삭제): 브랜치 push로 돌 때는 백필 앞쪽 12개 창
+          if [ "${{ github.event_name }}" = "push" ]; then MONTHS=12; fi
           if [ "$MODE" = "backfill" ]; then
             node scripts/refresh-scsbid-cache.mjs --backfill 25 --types "${TYPES:-cnstwk,servc}"
           else
-            node scripts/refresh-scsbid-cache.mjs --months "${MONTHS:-3}" --types "${TYPES:-cnstwk,servc}"
+            node scripts/refresh-scsbid-cache.mjs --months "${MONTHS:-3}" --skip "${SKIP:-0}" --types "${TYPES:-cnstwk,servc}"
           fi
 
       - name: Save notice cache

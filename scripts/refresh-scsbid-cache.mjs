@@ -55,7 +55,7 @@ const RETAIN_WINDOWS = 25;
 // 낙찰 창 W의 공고는 W-3 ~ W 사이에 등록된 것으로 본다(입찰공고→개찰 기간이 3개월을 넘는
 // 건은 드물다. 넘으면 그 행은 공고정보 없이 저장되고 조회 도구가 '공고 미연결'로 센다).
 const NOTICE_LOOKBACK = 3;
-const CONCURRENCY = 4;
+const CONCURRENCY = 5;
 
 const TYPES = {
   cnstwk: { name: "공사", award: "getScsbidListSttusCnstwk", notice: "getBidPblancListInfoCnstwk", rgnDiv: "공사" },
@@ -70,6 +70,9 @@ const argVal = (name, dflt) => {
 };
 const BACKFILL = argv.includes("--backfill") ? Number(argVal("--backfill", RETAIN_WINDOWS)) : 0;
 const MONTHS = BACKFILL || Number(argVal("--months", 3));
+// 백필을 이틀로 나눌 때 쓴다(참가가능지역·면허제한 오퍼레이션은 한 달에 30여 쪽이라 25개 창을 하루에 받으면
+// 일일 한도 1,000회에 닿는다). --skip 12 = 최근 12개 창을 건너뛰고 그 앞부터.
+const SKIP = Number(argVal("--skip", 0));
 const TYPE_KEYS = String(argVal("--types", "cnstwk,servc"))
   .split(",")
   .map((s) => s.trim())
@@ -288,6 +291,27 @@ async function getRegions(yyyymm) {
   return { ok: true, map, cached: false };
 }
 
+async function getLicenses(yyyymm) {
+  const kind = "license";
+  if (closedMonth(yyyymm)) {
+    const c = readCache(kind, yyyymm);
+    if (c) return { ok: true, map: c.map, cached: true };
+  }
+  const r = await fetchMonth(B, "getBidPblancListInfoLicenseLimit", yyyymm, 1, "면허제한");
+  if (!r.ok) return { ok: false, err: r.err };
+  const map = {};
+  for (const it of r.rows) {
+    const no = nz(it.bidNtceNo);
+    // "기계설비ㆍ가스공사업/6202" → 코드 떼고 이름만
+    const nm = nz(it.lcnsLmtNm).replace(/\/[0-9A-Za-z]+$/, "");
+    if (!no || !nm) continue;
+    const k = `${nz(it.bsnsDivNm)}|${no}`;
+    (map[k] = map[k] || []).includes(nm) || map[k].push(nm);
+  }
+  writeCache(kind, yyyymm, { month: yyyymm, total: r.total, fetched: r.rows.length, map });
+  return { ok: true, map, cached: false };
+}
+
 // ── 낙찰 행 정리 ────────────────────────────────────────────────────────────
 const COLS = [
   "공고번호", "공고차수", "분류번호", "재입찰번호", "공고명",
@@ -295,7 +319,7 @@ const COLS = [
   "낙찰업체", "사업자번호", "대표자", "업체소재지",
   "낙찰금액", "낙찰률", "참가업체수", "실개찰일시",
   "현장지역", "주공종", "부공종", "참가가능지역",
-  "추정가격", "계약방법", "낙찰방법", "공동수급", "분류", "테스트의심",
+  "추정가격", "계약방법", "낙찰방법", "공동수급", "분류", "면허제한", "테스트의심",
 ];
 
 function shortAddr(a) {
@@ -312,7 +336,7 @@ function looksTest(it) {
 }
 const awardKey = (it) => [it.bidNtceNo, it.bidNtceOrd, it.bidClsfcNo, it.rbidNo].map(nz).join("|");
 
-function buildRow(it, notice, regions) {
+function buildRow(it, notice, regions, licenses) {
   const n = notice || {};
   return [
     nz(it.bidNtceNo), nz(it.bidNtceOrd), nz(it.bidClsfcNo), nz(it.rbidNo), nz(it.bidNtceNm),
@@ -324,13 +348,14 @@ function buildRow(it, notice, regions) {
     nz(it.rlOpengDt),
     n.site || "", n.main || "", n.subs || "", (regions || []).join("|"),
     n.price || 0, n.cntrct || "", n.sucsf || "", n.jv || "", n.cls || "",
+    (licenses || []).join("|"),
     looksTest(it) ? 1 : 0,
   ];
 }
 
 // ── 메인 ────────────────────────────────────────────────────────────────────
 const windows = [];
-for (let k = 0; k < MONTHS; k++) windows.push(addMonth(THIS_MONTH, -k));
+for (let k = SKIP; k < SKIP + MONTHS && k < RETAIN_WINDOWS; k++) windows.push(addMonth(THIS_MONTH, -k));
 const noticeMonths = new Set();
 for (const w of windows) for (let k = 0; k <= NOTICE_LOOKBACK; k++) noticeMonths.add(addMonth(w, -k));
 const noticeList = [...noticeMonths].sort().reverse();
@@ -340,6 +365,7 @@ mkdirSync(OUT_DIR, { recursive: true });
 
 // 1) 참가가능지역(업무구분 공통)과 공고정보를 먼저 모은다.
 const regionByMonth = {};
+const licenseByMonth = {};
 const noticeByType = Object.fromEntries(TYPE_KEYS.map((k) => [k, {}]));
 const failures = [];
 
@@ -348,6 +374,14 @@ await pool(
     const r = await getRegions(m);
     if (r.ok) regionByMonth[m] = r.map;
     else failures.push(`참가가능지역 ${m}: ${r.err}`);
+  }),
+  CONCURRENCY
+);
+await pool(
+  noticeList.map((m) => async () => {
+    const r = await getLicenses(m);
+    if (r.ok) licenseByMonth[m] = r.map;
+    else failures.push(`면허제한 ${m}: ${r.err}`);
   }),
   CONCURRENCY
 );
@@ -371,7 +405,7 @@ await pool(
       const t = TYPES[tk];
       // 필요한 공고 월 중 하나라도 실패했으면 이 창은 덮어쓰지 않는다(기존 파일 보존).
       const need = Array.from({ length: NOTICE_LOOKBACK + 1 }, (_, k) => addMonth(w, -k));
-      const missing = need.filter((m) => !noticeByType[tk][m] || !regionByMonth[m]);
+      const missing = need.filter((m) => !noticeByType[tk][m] || !regionByMonth[m] || !licenseByMonth[m]);
       if (missing.length) {
         skipped.push(`${t.name} ${w}: 공고·지역 정보 미수집(${missing.join(",")})`);
         return;
@@ -384,6 +418,9 @@ await pool(
       const seen = new Set();
       const rows = [];
       let joined = 0;
+      let withMain = 0;
+      let withRgn = 0;
+      let withLic = 0;
       for (const it of r.rows) {
         const key = awardKey(it);
         if (seen.has(key)) continue;
@@ -391,12 +428,17 @@ await pool(
         const no = nz(it.bidNtceNo);
         let notice = null;
         let regions = null;
+        let licenses = null;
         for (const m of need) {
+          if (!licenses && licenseByMonth[m][`${t.rgnDiv}|${no}`]) licenses = licenseByMonth[m][`${t.rgnDiv}|${no}`];
           if (!notice && noticeByType[tk][m][no]) notice = noticeByType[tk][m][no];
           if (!regions && regionByMonth[m][`${t.rgnDiv}|${no}`]) regions = regionByMonth[m][`${t.rgnDiv}|${no}`];
         }
         if (notice) joined++;
-        rows.push(buildRow(it, notice, regions));
+        if (notice && notice.main) withMain++;
+        if (regions) withRgn++;
+        if (licenses) withLic++;
+        rows.push(buildRow(it, notice, regions, licenses));
       }
       rows.sort((a, b) => (a[0] + a[1] + a[2] + a[3]).localeCompare(b[0] + b[1] + b[2] + b[3]));
       const payload = {
@@ -404,13 +446,13 @@ await pool(
         type: t.name,
         window: w,
         award: { total: r.total, fetched: r.rows.length, unique: rows.length, complete: r.rows.length >= r.total },
-        join: { notice: joined, missing: rows.length - joined, noticeMonths: need },
+        join: { notice: joined, missing: rows.length - joined, mainCnstty: withMain, region: withRgn, license: withLic, noticeMonths: need },
         cols: COLS,
         rows,
       };
       const buf = gzipSync(Buffer.from(JSON.stringify(payload)), { level: 9 });
       writeFileSync(join(OUT_DIR, `${tk}-${w}.json.gz`), buf);
-      written.push(`${t.name} ${w}: ${rows.length}건, 공고연결 ${joined}건, ${(buf.length / 1024).toFixed(0)}KB`);
+      written.push(`${t.name} ${w}: ${rows.length}건, 공고연결 ${joined} · 주공종 ${withMain} · 참가가능지역 ${withRgn} · 면허제한 ${withLic}, ${(buf.length / 1024).toFixed(0)}KB`);
     })
   ),
   CONCURRENCY
@@ -448,6 +490,8 @@ for (const f of readdirSync(OUT_DIR).sort()) {
     rows: p.rows.length,
     complete: p.award.complete,
     noticeJoined: p.join.notice,
+    mainCnstty: p.join.mainCnstty,
+    license: p.join.license,
     kb: Math.round(size / 1024),
     builtAt: builtNow ? manifest.updated : prev?.builtAt ?? manifest.updated,
   };
