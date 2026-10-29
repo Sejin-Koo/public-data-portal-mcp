@@ -1,0 +1,89 @@
+name: Refresh scsbid cache
+
+# 나라장터 공사·용역 낙찰정보 월별 사전수집본(data/scsbid/) 갱신.
+# 공고정보·참가가능지역 원본은 저장소가 아니라 Actions 캐시(.cache/scsbid)에만 둔다.
+permissions:
+  contents: write
+
+on:
+  # TEMP(병합 전 삭제): 브랜치에서 첫 수집·용량 실측용
+  push:
+    branches: [scsbid-cache]
+    paths: [scripts/refresh-scsbid-cache.mjs, .github/workflows/refresh-scsbid-cache.yml]
+  schedule:
+    # 매월 2일·16일 04:17 KST (= 1일·15일 19:17 UTC). 최근 3개 창을 다시 받는다
+    # (개찰→낙찰 등록 지연이 최대 수십 일이라 지난달·지지난달 창도 늘어난다).
+    - cron: "17 19 1,15 * *"
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "refresh = 최근 N개 창 / backfill = 보존기간(25개 창) 전부"
+        type: choice
+        options: [refresh, backfill]
+        default: refresh
+      months:
+        description: "refresh일 때 다시 받을 창 수 (기본 3)"
+        default: "3"
+      types:
+        description: "업무구분 (cnstwk,servc)"
+        default: "cnstwk,servc"
+
+concurrency:
+  group: scsbid-cache
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    # 백필은 원천 호출이 1,500회 안팎이라 1시간을 넘길 수 있다.
+    timeout-minutes: 300
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+
+      - name: Restore notice cache
+        uses: actions/cache/restore@v6
+        with:
+          path: .cache/scsbid
+          key: scsbid-${{ github.run_id }}
+          restore-keys: scsbid-
+
+      # 외부 패키지를 쓰지 않는다(fetch·zlib 모두 Node 내장).
+      - name: Refresh scsbid cache
+        env:
+          DATA_PORTAL_KEY: ${{ secrets.DATA_PORTAL_KEY }}
+        run: |
+          if [ -z "$DATA_PORTAL_KEY" ]; then echo "::error::DATA_PORTAL_KEY secret not set"; exit 1; fi
+          MODE="${{ github.event.inputs.mode }}"
+          MONTHS="${{ github.event.inputs.months }}"
+          TYPES="${{ github.event.inputs.types }}"
+          if [ "$MODE" = "backfill" ]; then
+            node scripts/refresh-scsbid-cache.mjs --backfill 25 --types "${TYPES:-cnstwk,servc}"
+          else
+            node scripts/refresh-scsbid-cache.mjs --months "${MONTHS:-3}" --types "${TYPES:-cnstwk,servc}"
+          fi
+
+      - name: Save notice cache
+        if: always()
+        uses: actions/cache/save@v6
+        with:
+          path: .cache/scsbid
+          key: scsbid-${{ github.run_id }}
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/scsbid
+          if git diff --cached --quiet; then
+            echo "no change - skip commit"
+          else
+            SZ=$(du -sk data/scsbid | cut -f1)
+            git commit -m "chore: 나라장터 낙찰 수집본 자동 갱신 (data/scsbid ${SZ}KB)"
+            git push origin HEAD:${GITHUB_REF_NAME}
+          fi
