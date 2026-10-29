@@ -6,10 +6,6 @@ permissions:
   contents: write
 
 on:
-  # TEMP(병합 전 삭제): 브랜치에서 첫 수집·용량 실측용
-  push:
-    branches: [scsbid-cache]
-    paths: [scripts/refresh-scsbid-cache.mjs, .github/workflows/refresh-scsbid-cache.yml]
   schedule:
     # 매월 2일·16일 04:17 KST (= 1일·15일 19:17 UTC). 최근 3개 창을 다시 받는다
     # (개찰→낙찰 등록 지연이 최대 수십 일이라 지난달·지지난달 창도 늘어난다).
@@ -66,8 +62,6 @@ jobs:
           MONTHS="${{ github.event.inputs.months }}"
           TYPES="${{ github.event.inputs.types }}"
           SKIP="${{ github.event.inputs.skip }}"
-          # TEMP(병합 전 삭제): 브랜치 push로 돌 때는 백필 앞쪽 12개 창
-          if [ "${{ github.event_name }}" = "push" ]; then MONTHS=12; fi
           if [ "$MODE" = "backfill" ]; then
             node scripts/refresh-scsbid-cache.mjs --backfill 25 --types "${TYPES:-cnstwk,servc}"
           else
