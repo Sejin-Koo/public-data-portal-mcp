@@ -10,6 +10,9 @@ on:
     # 매월 2일·16일 04:17 KST (= 1일·15일 19:17 UTC). 최근 3개 창을 다시 받는다
     # (개찰→낙찰 등록 지연이 최대 수십 일이라 지난달·지지난달 창도 늘어난다).
     - cron: "17 19 1,15 * *"
+    # 한 번만 쓰는 일정(2026-10-31 00:40 KST): 2차 백필 때 한도에 걸려 빠진 공사 2025-06~2025-09 창.
+    # 다음 해 같은 날에 다시 돌지 않도록 수집 확인 뒤 이 줄과 아래 ONCE 분기를 지운다.
+    - cron: "40 15 30 10 *"
   workflow_dispatch:
     inputs:
       mode:
@@ -62,6 +65,10 @@ jobs:
           MONTHS="${{ github.event.inputs.months }}"
           TYPES="${{ github.event.inputs.types }}"
           SKIP="${{ github.event.inputs.skip }}"
+          if [ "${{ github.event.schedule }}" = "40 15 30 10 *" ]; then
+            MODE=refresh; MONTHS=4; SKIP=13; TYPES=cnstwk
+            echo "ONCE: 공사 202506~202509 재수집"
+          fi
           if [ "$MODE" = "backfill" ]; then
             node scripts/refresh-scsbid-cache.mjs --backfill 25 --types "${TYPES:-cnstwk,servc}"
           else
