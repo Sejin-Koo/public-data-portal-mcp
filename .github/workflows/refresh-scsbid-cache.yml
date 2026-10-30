@@ -48,6 +48,9 @@ jobs:
         with:
           node-version: "24"
 
+      - name: 데이터 받기(릴리스 첨부파일)
+        run: node scripts/release-data.mjs fetch
+
       - name: Restore notice cache
         uses: actions/cache/restore@v6
         with:
@@ -82,15 +85,9 @@ jobs:
           path: .cache/scsbid
           key: scsbid-${{ github.run_id }}
 
-      - name: Commit and push if changed
+      - name: 릴리스에 올리고 가리킴 커밋
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data/scsbid
-          if git diff --cached --quiet; then
-            echo "no change - skip commit"
-          else
-            SZ=$(du -sk data/scsbid | cut -f1)
-            git commit -m "chore: 나라장터 낙찰 수집본 자동 갱신 (data/scsbid ${SZ}KB)"
-            git push origin HEAD:${GITHUB_REF_NAME}
-          fi
+          SZ=$(du -sk data/scsbid | cut -f1)
+          scripts/commit-data-release.sh "chore: 나라장터 낙찰 수집본 자동 갱신 (data/scsbid ${SZ}KB, 릴리스 첨부)" prune:data/scsbid/ data/scsbid/*

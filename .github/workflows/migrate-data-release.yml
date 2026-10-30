@@ -1,0 +1,39 @@
+name: Migrate data to release (one-time)
+
+# 2026-10-30: git에 커밋돼 있던 데이터 파일을 릴리스 'data' 첨부파일로 옮기는 1회용 작업.
+# 올린 뒤 data-release.json을 커밋하고, 데이터 파일은 git 추적에서 뺀다(.gitignore에 이미 있음).
+# 이미 main 이력에 있는 데이터 커밋은 지우지 않는다. 끝나면 이 파일은 지워도 된다.
+permissions:
+  contents: write
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+      - name: 올리기·가리킴 커밋·추적 해제
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          FILES="data/corp_name_index.json.gz data/kiscon_bizno_index.json.gz $(ls data/scsbid/* | tr '\n' ' ')"
+          node scripts/release-data.mjs publish $FILES
+          # 받은 파일이 올린 파일과 같은지 바로 확인한다
+          mkdir -p /tmp/verify && cp -r data /tmp/verify/ && rm -rf data/scsbid data/corp_name_index.json.gz data/kiscon_bizno_index.json.gz
+          node scripts/release-data.mjs fetch
+          diff -r /tmp/verify/data/scsbid data/scsbid
+          cmp /tmp/verify/data/corp_name_index.json.gz data/corp_name_index.json.gz
+          cmp /tmp/verify/data/kiscon_bizno_index.json.gz data/kiscon_bizno_index.json.gz
+          git rm -r -q --cached data/scsbid data/corp_name_index.json.gz data/kiscon_bizno_index.json.gz
+          git add data-release.json
+          git commit -q -m "데이터 파일을 릴리스 첨부파일로 이전 (가리킴 data-release.json, 이력은 그대로)"
+          git push -q origin HEAD:main
+          echo "이전 완료: $(node -e 'console.log(Object.keys(require("./data-release.json").files).length)')개 파일"

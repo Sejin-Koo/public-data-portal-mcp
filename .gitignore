@@ -3,3 +3,9 @@ node_modules/
 package-lock.json
 runsmoke.sh
 .cache/
+# 데이터 파일은 릴리스 'data' 첨부파일에 둔다(scripts/release-data.mjs). 저장소에는 data-release.json만.
+data/scsbid/
+data/corp_name_index.json.gz
+data/kiscon_bizno_index.json.gz
+data/hff/
+.release-up-*/

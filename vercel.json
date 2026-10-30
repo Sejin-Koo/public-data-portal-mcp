@@ -2,7 +2,8 @@
   "functions": {
     "api/mcp.js": {
       "maxDuration": 60,
-      "includeFiles": "data/scsbid/**"
+      "includeFiles": "data/**"
     }
-  }
+  },
+  "buildCommand": "node scripts/release-data.mjs fetch"
 }

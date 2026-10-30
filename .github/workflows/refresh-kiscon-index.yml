@@ -38,6 +38,9 @@ jobs:
         with:
           node-version: "24"
 
+      - name: 데이터 받기(릴리스 첨부파일)
+        run: node scripts/release-data.mjs fetch
+
       # 이 스크립트는 외부 패키지를 쓰지 않는다(fetch·zlib 모두 Node 내장). npm install 불필요.
       - name: Refresh kiscon bizno index
         env:
@@ -55,15 +58,9 @@ jobs:
             node scripts/refresh-kiscon-index.mjs --months "${MONTHS:-2}"
           fi
 
-      - name: Commit and push if changed
+      - name: 릴리스에 올리고 가리킴 커밋
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          if git diff --quiet -- data/kiscon_bizno_index.json.gz; then
-            echo "no change - skip commit"
-          else
-            CNT=$(node -e "const{gunzipSync}=require('zlib'),fs=require('fs');console.log(JSON.parse(gunzipSync(fs.readFileSync('data/kiscon_bizno_index.json.gz')).toString('utf-8')).count)")
-            git add data/kiscon_bizno_index.json.gz
-            git commit -m "chore: 키스콘 사업자번호 색인 자동 갱신 (수록 ${CNT}개사)"
-            git push
-          fi
+          CNT=$(node -e "const{gunzipSync}=require('zlib'),fs=require('fs');console.log(JSON.parse(gunzipSync(fs.readFileSync('data/kiscon_bizno_index.json.gz')).toString('utf-8')).count)")
+          scripts/commit-data-release.sh "chore: 키스콘 사업자번호 색인 자동 갱신 (수록 ${CNT}개사, 릴리스 첨부)" data/kiscon_bizno_index.json.gz
