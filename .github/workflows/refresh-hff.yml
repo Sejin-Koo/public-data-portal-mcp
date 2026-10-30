@@ -1,0 +1,34 @@
+name: Refresh health functional food (전수)
+
+# 식약처 건강기능식품 품목정보 전수 수집(analyze_health_functional_food용). 월 1회.
+# 데이터는 릴리스 'data' 첨부파일(data/hff/*)에 두고 저장소에는 data-release.json만 커밋한다.
+permissions:
+  contents: write
+
+on:
+  schedule:
+    # 매월 3일 05:23 KST (= 2일 20:23 UTC)
+    - cron: "23 20 2 * *"
+  workflow_dispatch: {}
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+      - name: 데이터 받기(릴리스 첨부파일)
+        run: node scripts/release-data.mjs fetch
+      - name: 전수 수집
+        env:
+          DATA_PORTAL_KEY: ${{ secrets.DATA_PORTAL_KEY }}
+        run: node scripts/refresh-hff.mjs
+      - name: 릴리스에 올리고 가리킴 커밋
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          N=$(node -e 'console.log(require("./data/hff/manifest.json").totalCount)')
+          scripts/commit-data-release.sh "chore: 건강기능식품 전수 갱신 (${N}건, 릴리스 첨부)" prune:data/hff/ data/hff/*

@@ -24,6 +24,9 @@ jobs:
         with:
           node-version: "24"
 
+      - name: 데이터 받기(릴리스 첨부파일)
+        run: node scripts/release-data.mjs fetch
+
       - name: Install dependencies
         run: npm install --omit=dev --no-save adm-zip
 
@@ -32,14 +35,8 @@ jobs:
           DART_API_KEY: ${{ secrets.DART_API_KEY }}
         run: node scripts/refresh-corp-index.mjs
 
-      - name: Commit and push if changed
+      - name: 릴리스에 올리고 가리킴 커밋
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          if git diff --quiet -- data/corp_name_index.json.gz; then
-            echo "변경 없음 — 커밋 생략"
-          else
-            git add data/corp_name_index.json.gz
-            git commit -m "chore: corp_name_index 자동 갱신 ($(date -u +%Y-%m-%d))"
-            git push
-          fi
+          scripts/commit-data-release.sh "chore: corp_name_index 자동 갱신 ($(date -u +%Y-%m-%d), 릴리스 첨부)" data/corp_name_index.json.gz
