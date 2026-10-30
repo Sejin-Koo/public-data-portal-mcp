@@ -1,7 +1,106 @@
 {
- "updated": "2026-10-29 12:23 KST",
+ "updated": "2026-10-30 10:52 KST",
  "retainWindows": 25,
  "files": {
+  "cnstwk-202410.json.gz": {
+   "type": "공사",
+   "window": "202410",
+   "rows": 13362,
+   "complete": true,
+   "noticeJoined": 13358,
+   "mainCnstty": 3205,
+   "license": 12424,
+   "kb": 1241,
+   "builtAt": "2026-10-30 10:52 KST"
+  },
+  "cnstwk-202411.json.gz": {
+   "type": "공사",
+   "window": "202411",
+   "rows": 15588,
+   "complete": true,
+   "noticeJoined": 15584,
+   "mainCnstty": 4907,
+   "license": 14344,
+   "kb": 1443,
+   "builtAt": "2026-10-30 10:52 KST"
+  },
+  "cnstwk-202412.json.gz": {
+   "type": "공사",
+   "window": "202412",
+   "rows": 14867,
+   "complete": true,
+   "noticeJoined": 14864,
+   "mainCnstty": 5371,
+   "license": 14160,
+   "kb": 1355,
+   "builtAt": "2026-10-30 10:52 KST"
+  },
+  "cnstwk-202501.json.gz": {
+   "type": "공사",
+   "window": "202501",
+   "rows": 5052,
+   "complete": true,
+   "noticeJoined": 5050,
+   "mainCnstty": 1590,
+   "license": 4747,
+   "kb": 479,
+   "builtAt": "2026-10-30 10:52 KST"
+  },
+  "cnstwk-202502.json.gz": {
+   "type": "공사",
+   "window": "202502",
+   "rows": 11416,
+   "complete": true,
+   "noticeJoined": 11415,
+   "mainCnstty": 3239,
+   "license": 10811,
+   "kb": 1043,
+   "builtAt": "2026-10-30 10:52 KST"
+  },
+  "cnstwk-202503.json.gz": {
+   "type": "공사",
+   "window": "202503",
+   "rows": 18699,
+   "complete": true,
+   "noticeJoined": 18697,
+   "mainCnstty": 4782,
+   "license": 17407,
+   "kb": 1691,
+   "builtAt": "2026-10-30 10:52 KST"
+  },
+  "cnstwk-202504.json.gz": {
+   "type": "공사",
+   "window": "202504",
+   "rows": 15738,
+   "complete": true,
+   "noticeJoined": 15733,
+   "mainCnstty": 3797,
+   "license": 14387,
+   "kb": 1490,
+   "builtAt": "2026-10-30 10:52 KST"
+  },
+  "cnstwk-202505.json.gz": {
+   "type": "공사",
+   "window": "202505",
+   "rows": 13639,
+   "complete": true,
+   "noticeJoined": 13636,
+   "mainCnstty": 3561,
+   "license": 12685,
+   "kb": 1305,
+   "builtAt": "2026-10-30 10:52 KST"
+  },
+  "cnstwk-202510.json.gz": {
+   "type": "공사",
+   "window": "202510",
+   "rows": 11481,
+   "complete": true,
+   "noticeJoined": 11478,
+   "mainCnstty": 3132,
+   "license": 10435,
+   "kb": 1130,
+   "builtAt": "2026-10-30 10:52 KST"
+  },
   "cnstwk-202511.json.gz": {
    "type": "공사",
    "window": "202511",
@@ -133,6 +232,149 @@
    "license": 6030,
    "kb": 663,
    "builtAt": "2026-10-29 12:23 KST"
+  },
+  "servc-202410.json.gz": {
+   "type": "용역",
+   "window": "202410",
+   "rows": 8886,
+   "complete": true,
+   "noticeJoined": 8886,
+   "mainCnstty": 0,
+   "license": 5729,
+   "kb": 928,
+   "builtAt": "2026-10-30 10:52 KST"
+  },
+  "servc-202411.json.gz": {
+   "type": "용역",
+   "window": "202411",
+   "rows": 11809,
+   "complete": true,
+   "noticeJoined": 11809,
+   "mainCnstty": 0,
+   "license": 8319,
+   "kb": 1211,
+   "builtAt": "2026-10-30 10:52 KST"
+  },
+  "servc-202412.json.gz": {
+   "type": "용역",
+   "window": "202412",
+   "rows": 14912,
+   "complete": true,
+   "noticeJoined": 14912,
+   "mainCnstty": 0,
+   "license": 10763,
+   "kb": 1478,
+   "builtAt": "2026-10-30 10:52 KST"
+  },
+  "servc-202501.json.gz": {
+   "type": "용역",
+   "window": "202501",
+   "rows": 10177,
+   "complete": true,
+   "noticeJoined": 10175,
+   "mainCnstty": 0,
+   "license": 6206,
+   "kb": 1063,
+   "builtAt": "2026-10-30 10:52 KST"
+  },
+  "servc-202502.json.gz": {
+   "type": "용역",
+   "window": "202502",
+   "rows": 18198,
+   "complete": true,
+   "noticeJoined": 18197,
+   "mainCnstty": 0,
+   "license": 11697,
+   "kb": 1908,
+   "builtAt": "2026-10-30 10:52 KST"
+  },
+  "servc-202503.json.gz": {
+   "type": "용역",
+   "window": "202503",
+   "rows": 17162,
+   "complete": true,
+   "noticeJoined": 17162,
+   "mainCnstty": 0,
+   "license": 11181,
+   "kb": 1819,
+   "builtAt": "2026-10-30 10:52 KST"
+  },
+  "servc-202504.json.gz": {
+   "type": "용역",
+   "window": "202504",
+   "rows": 15673,
+   "complete": true,
+   "noticeJoined": 15672,
+   "mainCnstty": 0,
+   "license": 10508,
+   "kb": 1692,
+   "builtAt": "2026-10-30 10:52 KST"
+  },
+  "servc-202505.json.gz": {
+   "type": "용역",
+   "window": "202505",
+   "rows": 11831,
+   "complete": true,
+   "noticeJoined": 11831,
+   "mainCnstty": 0,
+   "license": 7948,
+   "kb": 1289,
+   "builtAt": "2026-10-30 10:52 KST"
+  },
+  "servc-202506.json.gz": {
+   "type": "용역",
+   "window": "202506",
+   "rows": 11247,
+   "complete": true,
+   "noticeJoined": 11247,
+   "mainCnstty": 0,
+   "license": 7746,
+   "kb": 1230,
+   "builtAt": "2026-10-30 10:52 KST"
+  },
+  "servc-202507.json.gz": {
+   "type": "용역",
+   "window": "202507",
+   "rows": 10517,
+   "complete": true,
+   "noticeJoined": 10517,
+   "mainCnstty": 0,
+   "license": 7215,
+   "kb": 1161,
+   "builtAt": "2026-10-30 10:52 KST"
+  },
+  "servc-202508.json.gz": {
+   "type": "용역",
+   "window": "202508",
+   "rows": 8789,
+   "complete": true,
+   "noticeJoined": 8789,
+   "mainCnstty": 0,
+   "license": 5974,
+   "kb": 971,
+   "builtAt": "2026-10-30 10:52 KST"
+  },
+  "servc-202509.json.gz": {
+   "type": "용역",
+   "window": "202509",
+   "rows": 8063,
+   "complete": true,
+   "noticeJoined": 8062,
+   "mainCnstty": 0,
+   "license": 5116,
+   "kb": 886,
+   "builtAt": "2026-10-30 10:52 KST"
+  },
+  "servc-202510.json.gz": {
+   "type": "용역",
+   "window": "202510",
+   "rows": 7903,
+   "complete": true,
+   "noticeJoined": 7903,
+   "mainCnstty": 0,
+   "license": 5160,
+   "kb": 861,
+   "builtAt": "2026-10-30 10:52 KST"
   },
   "servc-202511.json.gz": {
    "type": "용역",
@@ -267,5 +509,5 @@
    "builtAt": "2026-10-29 12:23 KST"
   }
  },
- "totalKB": 29290
+ "totalKB": 56963
 }
