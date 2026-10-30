@@ -9,3 +9,4 @@ data/corp_name_index.json.gz
 data/kiscon_bizno_index.json.gz
 data/hff/
 .release-up-*/
+public/

@@ -75,6 +75,11 @@ async function cmdFetch() {
   }
   await Promise.all(Array.from({ length: 6 }, worker));
   console.log(`release-data fetch: 받음 ${got}, 그대로 ${kept}, 전체 ${ents.length}`);
+  // Vercel은 빌드 명령이 있으면 정적 출력 폴더(public)를 요구한다. 이 서버는 함수(api/)만 쓰므로 빈 자리만 만든다.
+  if (process.env.VERCEL) {
+    fs.mkdirSync(path.join(ROOT, "public"), { recursive: true });
+    fs.writeFileSync(path.join(ROOT, "public", "robots.txt"), "User-agent: *\nDisallow: /\n");
+  }
 }
 
 function ensureRelease(repo) {
