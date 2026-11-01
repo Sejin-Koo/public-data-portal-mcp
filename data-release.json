@@ -14,7 +14,7 @@
   "data/hff/hff-2025.json.gz": {"repo":"Sejin-Koo/public-data-portal-mcp","tag":"data","asset":"hff__hff-2025.json.gz","sha256":"a080d2f4a225103fe06eaea15e0b7f689be3f6a22962549d7b02aa453e905e9e","size":727292},
   "data/hff/hff-2026.json.gz": {"repo":"Sejin-Koo/public-data-portal-mcp","tag":"data","asset":"hff__hff-2026.json.gz","sha256":"845a2c1c02a5569d120abfe1cc3c06758ddc0eda6647b415178a7e738e3aeccc","size":652286},
   "data/hff/manifest.json": {"repo":"Sejin-Koo/public-data-portal-mcp","tag":"data","asset":"hff__manifest.json","sha256":"1239b893a853bbe96bb2764a64238e74901f73135b2c2c6e666c056fc2be8ac7","size":430},
-  "data/kiscon_bizno_index.json.gz": {"repo":"Sejin-Koo/public-data-portal-mcp","tag":"data","asset":"kiscon_bizno_index.json.gz","sha256":"5696a67c92c9ead3f012591671b778d6580ee6bda2c8a3f738d8dec50962ba2b","size":3904427},
+  "data/kiscon_bizno_index.json.gz": {"repo":"Sejin-Koo/public-data-portal-mcp","tag":"data","asset":"kiscon_bizno_index.json.gz","sha256":"f7c80f0be41b2f7739f05c3920e724bc3f13251e7d162b106d7e307c839013e5","size":3913898},
   "data/scsbid/cnstwk-202410.json.gz": {"repo":"Sejin-Koo/public-data-portal-mcp","tag":"data","asset":"scsbid__cnstwk-202410.json.gz","sha256":"31ebf31390ed9965a7ef8035a5436a8c9331b2072ff1ce22c9fcb79443046bb5","size":1270328},
   "data/scsbid/cnstwk-202411.json.gz": {"repo":"Sejin-Koo/public-data-portal-mcp","tag":"data","asset":"scsbid__cnstwk-202411.json.gz","sha256":"8d9d5015673bfbb29e4a52f5ad8f2a19bd69fe6af01e04cbdb7a859cc178590f","size":1477211},
   "data/scsbid/cnstwk-202412.json.gz": {"repo":"Sejin-Koo/public-data-portal-mcp","tag":"data","asset":"scsbid__cnstwk-202412.json.gz","sha256":"90bcfb7ea5e1bf1e88dbec662b13beb83268e814a3fe3fba88093208efd79308","size":1387240},
