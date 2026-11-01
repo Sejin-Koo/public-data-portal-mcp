@@ -15,7 +15,6 @@
   "data/hff/hff-2026.json.gz": {"repo":"Sejin-Koo/public-data-portal-mcp","tag":"data","asset":"hff__hff-2026.json.gz","sha256":"845a2c1c02a5569d120abfe1cc3c06758ddc0eda6647b415178a7e738e3aeccc","size":652286},
   "data/hff/manifest.json": {"repo":"Sejin-Koo/public-data-portal-mcp","tag":"data","asset":"hff__manifest.json","sha256":"1239b893a853bbe96bb2764a64238e74901f73135b2c2c6e666c056fc2be8ac7","size":430},
   "data/kiscon_bizno_index.json.gz": {"repo":"Sejin-Koo/public-data-portal-mcp","tag":"data","asset":"kiscon_bizno_index.json.gz","sha256":"f7c80f0be41b2f7739f05c3920e724bc3f13251e7d162b106d7e307c839013e5","size":3913898},
-  "data/scsbid/cnstwk-202410.json.gz": {"repo":"Sejin-Koo/public-data-portal-mcp","tag":"data","asset":"scsbid__cnstwk-202410.json.gz","sha256":"31ebf31390ed9965a7ef8035a5436a8c9331b2072ff1ce22c9fcb79443046bb5","size":1270328},
   "data/scsbid/cnstwk-202411.json.gz": {"repo":"Sejin-Koo/public-data-portal-mcp","tag":"data","asset":"scsbid__cnstwk-202411.json.gz","sha256":"8d9d5015673bfbb29e4a52f5ad8f2a19bd69fe6af01e04cbdb7a859cc178590f","size":1477211},
   "data/scsbid/cnstwk-202412.json.gz": {"repo":"Sejin-Koo/public-data-portal-mcp","tag":"data","asset":"scsbid__cnstwk-202412.json.gz","sha256":"90bcfb7ea5e1bf1e88dbec662b13beb83268e814a3fe3fba88093208efd79308","size":1387240},
   "data/scsbid/cnstwk-202501.json.gz": {"repo":"Sejin-Koo/public-data-portal-mcp","tag":"data","asset":"scsbid__cnstwk-202501.json.gz","sha256":"71f4e61d6786425447e0003b1b0c8752859d08f1ddef4aca6b0293f0ef5a9508","size":490525},
@@ -34,10 +33,10 @@
   "data/scsbid/cnstwk-202606.json.gz": {"repo":"Sejin-Koo/public-data-portal-mcp","tag":"data","asset":"scsbid__cnstwk-202606.json.gz","sha256":"4fdab8345987329e9126b86f1e5050d8a37f95ef0332a907ae55bee89a40ab05","size":1367735},
   "data/scsbid/cnstwk-202607.json.gz": {"repo":"Sejin-Koo/public-data-portal-mcp","tag":"data","asset":"scsbid__cnstwk-202607.json.gz","sha256":"1b2853e9199b22c71c8bc34afa71697ccb07277bf9ece9ebc7dc1b69107b60bb","size":1068565},
   "data/scsbid/cnstwk-202608.json.gz": {"repo":"Sejin-Koo/public-data-portal-mcp","tag":"data","asset":"scsbid__cnstwk-202608.json.gz","sha256":"562cdcb033282cd52a006fe4beabac11a1b0e3c0935fad98fda39427ed6a5236","size":846688},
-  "data/scsbid/cnstwk-202609.json.gz": {"repo":"Sejin-Koo/public-data-portal-mcp","tag":"data","asset":"scsbid__cnstwk-202609.json.gz","sha256":"af13994990854cfaab9b78ea15a226b4f583c8b6589fe450b646320d72c6c86e","size":898294},
-  "data/scsbid/cnstwk-202610.json.gz": {"repo":"Sejin-Koo/public-data-portal-mcp","tag":"data","asset":"scsbid__cnstwk-202610.json.gz","sha256":"0db6dd19aca01649901f54fe9d4428609ff042292058f674152fcc72b1fc6780","size":678637},
-  "data/scsbid/manifest.json": {"repo":"Sejin-Koo/public-data-portal-mcp","tag":"data","asset":"scsbid__manifest.json","sha256":"dba18fdf171c0cd83374ec6e61836873c1b632ae02e33347a1be96ec0418e1d9","size":10925},
-  "data/scsbid/servc-202410.json.gz": {"repo":"Sejin-Koo/public-data-portal-mcp","tag":"data","asset":"scsbid__servc-202410.json.gz","sha256":"d88be19070cc1206867c67d9248a1245aef3923dc0ec543735dfe6756b5c612b","size":950501},
+  "data/scsbid/cnstwk-202609.json.gz": {"repo":"Sejin-Koo/public-data-portal-mcp","tag":"data","asset":"scsbid__cnstwk-202609.json.gz","sha256":"54bc675c32bbd362f3daed052d1a62f83ba95382edfd3aff38d0617ae1a54b5b","size":901227},
+  "data/scsbid/cnstwk-202610.json.gz": {"repo":"Sejin-Koo/public-data-portal-mcp","tag":"data","asset":"scsbid__cnstwk-202610.json.gz","sha256":"d0e5a67babddc37adfb142fda946fe78a9a327d193b1da6a9a1b292a67cc810e","size":745099},
+  "data/scsbid/cnstwk-202611.json.gz": {"repo":"Sejin-Koo/public-data-portal-mcp","tag":"data","asset":"scsbid__cnstwk-202611.json.gz","sha256":"5307362ecae32b76558965053b486b22c7238bfa69453a7596a1400c2efe3dbd","size":429},
+  "data/scsbid/manifest.json": {"repo":"Sejin-Koo/public-data-portal-mcp","tag":"data","asset":"scsbid__manifest.json","sha256":"0e3ccb34444f756a7639f5ce175db173d0aec6d2fc0efab85fae67dcf8e9507f","size":10896},
   "data/scsbid/servc-202411.json.gz": {"repo":"Sejin-Koo/public-data-portal-mcp","tag":"data","asset":"scsbid__servc-202411.json.gz","sha256":"9bf47c1fe68525700ac60fe2f115e2284dc19dde35d7a2bd536e6e46b3852126","size":1239949},
   "data/scsbid/servc-202412.json.gz": {"repo":"Sejin-Koo/public-data-portal-mcp","tag":"data","asset":"scsbid__servc-202412.json.gz","sha256":"8ad2777d3cb78124619618f02d6f5c2013f0384e5c8296363017a3226dc075a5","size":1513085},
   "data/scsbid/servc-202501.json.gz": {"repo":"Sejin-Koo/public-data-portal-mcp","tag":"data","asset":"scsbid__servc-202501.json.gz","sha256":"80692c3bb6c2e08808f2e9c957e3754e4fd0ce991a996da4a0ea10dce716d0b5","size":1088609},
@@ -60,6 +59,7 @@
   "data/scsbid/servc-202606.json.gz": {"repo":"Sejin-Koo/public-data-portal-mcp","tag":"data","asset":"scsbid__servc-202606.json.gz","sha256":"139152837c86efd8208351cd707dbae5c2ea28b472e2bea5b31d87a6de5f172c","size":1311348},
   "data/scsbid/servc-202607.json.gz": {"repo":"Sejin-Koo/public-data-portal-mcp","tag":"data","asset":"scsbid__servc-202607.json.gz","sha256":"9e1bdad0d9835f27fc5e71600f6e4a0f268337622f0786a9ed05d1b7f5f7d6a9","size":1119097},
   "data/scsbid/servc-202608.json.gz": {"repo":"Sejin-Koo/public-data-portal-mcp","tag":"data","asset":"scsbid__servc-202608.json.gz","sha256":"7360fcf4490507fbade7fd91766939c844899b3624a57c55d6f68f3bb7e5b283","size":986066},
-  "data/scsbid/servc-202609.json.gz": {"repo":"Sejin-Koo/public-data-portal-mcp","tag":"data","asset":"scsbid__servc-202609.json.gz","sha256":"e063a52e751ac65894b1db48face487f80230730a65899262a7b1200730640d6","size":878853},
-  "data/scsbid/servc-202610.json.gz": {"repo":"Sejin-Koo/public-data-portal-mcp","tag":"data","asset":"scsbid__servc-202610.json.gz","sha256":"2fb56829af0dec57bedefed77d3b1244094feaf2a3935efeb34fdd26c01ec636","size":508984}
+  "data/scsbid/servc-202609.json.gz": {"repo":"Sejin-Koo/public-data-portal-mcp","tag":"data","asset":"scsbid__servc-202609.json.gz","sha256":"1ab0c556f48a990cb12fd90553e6d1b042dcf39f38cec691ea074d5a3afec3ee","size":888342},
+  "data/scsbid/servc-202610.json.gz": {"repo":"Sejin-Koo/public-data-portal-mcp","tag":"data","asset":"scsbid__servc-202610.json.gz","sha256":"b6921f3b61b141a9634c5a1a2b50a75ffe25bd9bfa1fc3659c50bc60b32592df","size":565738},
+  "data/scsbid/servc-202611.json.gz": {"repo":"Sejin-Koo/public-data-portal-mcp","tag":"data","asset":"scsbid__servc-202611.json.gz","sha256":"55e3f61615da6c6a65bc05662949b9bd37c3afe57e326cd006f58334e764f228","size":429}
 }}
