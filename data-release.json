@@ -1,5 +1,5 @@
 {"tag": "data", "note": "데이터는 릴리스 첨부파일에 있다. scripts/release-data.mjs 참조", "files": {
-  "data/corp_name_index.json.gz": {"repo":"Sejin-Koo/public-data-portal-mcp","tag":"data","asset":"corp_name_index.json.gz","sha256":"7539086410b652fbfd1cdb53d4fdc6a8e38e6817e6929d461443ed5c897079c5","size":1781458},
+  "data/corp_name_index.json.gz": {"repo":"Sejin-Koo/public-data-portal-mcp","tag":"data","asset":"corp_name_index.json.gz","sha256":"8a49d3effedbc1ca5813d4a2baaeb56011846352c1765e0a5dc686b64afcdaac","size":1782812},
   "data/hff/collected.json": {"repo":"Sejin-Koo/public-data-portal-mcp","tag":"data","asset":"hff__collected.json","sha256":"4bfc0bd609fc755c2c399fc1e85247fd1dd2495a4204d6bab2c266e57316763c","size":40},
   "data/hff/hff-2015.json.gz": {"repo":"Sejin-Koo/public-data-portal-mcp","tag":"data","asset":"hff__hff-2015.json.gz","sha256":"366a9618979623e815312c718ee00ceb80107208d514581b5eb78c02facabf78","size":431866},
   "data/hff/hff-2016.json.gz": {"repo":"Sejin-Koo/public-data-portal-mcp","tag":"data","asset":"hff__hff-2016.json.gz","sha256":"e3fe1549f76fcc2fb093b17666e567d58315088e66ae614b4fa24a61d8bbf4f3","size":106165},
