@@ -167,17 +167,38 @@ async function callPage(base, op, params) {
   return { ok: false, code: "ERR", msg: last };
 }
 
-/** 한 오퍼레이션 × 한 달 창을 끝까지 받는다. */
-async function fetchMonth(base, op, yyyymm, inqryDiv, label) {
+// 낙찰정보서비스는 2026-11-17부터 7일 이상 구간을 07(입력범위값 초과)로 거절한다
+// (실측: 6일 23시간 59분 통과 / 정확히 7일 실패). 낙찰 조회는 한 달을 7일 미만 조각으로 나눠 받는다.
+const AWARD_SPAN_DAYS = 7;
+function splitDays(from, to, days) {
+  const p = (s) => new Date(Date.UTC(+s.slice(0, 4), +s.slice(4, 6) - 1, +s.slice(6, 8), +s.slice(8, 10), +s.slice(10, 12)));
+  const f = (d) => d.toISOString().slice(0, 16).replace(/[-T:]/g, "");
+  const out = [];
+  const end = p(to);
+  let cur = p(from);
+  const span = days * 86400000 - 60000;
+  while (cur <= end) {
+    const hi = new Date(Math.min(end.getTime(), cur.getTime() + span));
+    out.push({ from: f(cur), to: f(hi) });
+    cur = new Date(hi.getTime() + 60000);
+  }
+  return out;
+}
+
+/** 한 오퍼레이션 × 한 달 창을 끝까지 받는다. spanDays를 주면 그 일수 미만 조각으로 나눠 받는다. */
+async function fetchMonth(base, op, yyyymm, inqryDiv, label, spanDays) {
   const { from, to } = monthRange(yyyymm);
+  const parts = spanDays ? splitDays(from, to, spanDays) : [{ from, to }];
   const rows = [];
   let total = 0;
-  for (let page = 1; page < 200; page++) {
-    const r = await callPage(base, op, { inqryDiv: String(inqryDiv), inqryBgnDt: from, inqryEndDt: to, pageNo: String(page) });
-    if (!r.ok) return { ok: false, rows, total, err: r.code === "RATELIMIT" ? "RATELIMIT" : r.msg };
-    if (page === 1) total = r.total;
-    rows.push(...r.items);
-    if (r.items.length < PAGE) break;
+  for (const part of parts) {
+    for (let page = 1; page < 200; page++) {
+      const r = await callPage(base, op, { inqryDiv: String(inqryDiv), inqryBgnDt: part.from, inqryEndDt: part.to, pageNo: String(page) });
+      if (!r.ok) return { ok: false, rows, total, err: r.code === "RATELIMIT" ? "RATELIMIT" : r.msg };
+      if (page === 1) total += r.total;
+      rows.push(...r.items);
+      if (r.items.length < PAGE) break;
+    }
   }
   const t = Date.now();
   console.log(`  ${label} ${yyyymm}: ${rows.length}/${total}행`);
@@ -410,7 +431,7 @@ await pool(
         skipped.push(`${t.name} ${w}: 공고·지역 정보 미수집(${missing.join(",")})`);
         return;
       }
-      const r = await fetchMonth(S, t.award, w, 3, `낙찰(${t.name})`);
+      const r = await fetchMonth(S, t.award, w, 3, `낙찰(${t.name})`, AWARD_SPAN_DAYS);
       if (!r.ok) {
         failures.push(`낙찰(${t.name}) ${w}: ${r.err}`);
         return;
