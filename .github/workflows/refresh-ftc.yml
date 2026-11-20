@@ -1,0 +1,33 @@
+name: Refresh FTC franchise registry (가맹본부·브랜드 전량)
+
+# 공정위 가맹본부 일반현황·브랜드 목록 연도별 전량 수집(search_franchise_headquarters·get_franchise_brand_stores용). 월 1회.
+# 데이터는 릴리스 'data' 첨부파일(data/ftc/*)에 두고 저장소에는 data-release.json만 커밋한다.
+permissions:
+  contents: write
+
+on:
+  schedule:
+    # 매월 4일 05:41 KST (= 3일 20:41 UTC)
+    - cron: "41 20 3 * *"
+  workflow_dispatch: {}
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+      - name: 데이터 받기(릴리스 첨부파일)
+        run: node scripts/release-data.mjs fetch
+      - name: 전량 수집
+        env:
+          DATA_PORTAL_KEY: ${{ secrets.DATA_PORTAL_KEY }}
+        run: node scripts/refresh-ftc.mjs
+      - name: 릴리스에 올리고 가리킴 커밋
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          scripts/commit-data-release.sh "chore: 공정위 가맹본부·브랜드 전량 갱신(릴리스 첨부)" data/ftc/*
