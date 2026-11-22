@@ -1,5 +1,5 @@
 {"tag": "data", "note": "데이터는 릴리스 첨부파일에 있다. scripts/release-data.mjs 참조", "files": {
-  "data/corp_name_index.json.gz": {"repo":"Sejin-Koo/public-data-portal-mcp","tag":"data","asset":"corp_name_index.json.gz","sha256":"4d9cb43685f8d30b2df6d476a1f52598bbbced1b6929e54943949c804910196f","size":1783368},
+  "data/corp_name_index.json.gz": {"repo":"Sejin-Koo/public-data-portal-mcp","tag":"data","asset":"corp_name_index.json.gz","sha256":"72edcba2aaf5d0ed1939e07eaf0da13a1a636f3eb793acc9aa612b2a40801d85","size":1784235},
   "data/ftc/brand-2023.json.gz": {"repo":"Sejin-Koo/public-data-portal-mcp","tag":"data","asset":"ftc__brand-2023.json.gz","sha256":"f25a641fd0f07e4d5e063c2452ec86c64fd356b51205cb07c2e7ef000df223fa","size":646123},
   "data/ftc/brand-2024.json.gz": {"repo":"Sejin-Koo/public-data-portal-mcp","tag":"data","asset":"ftc__brand-2024.json.gz","sha256":"2e364371404102f253bce71d272a352235a2d16258b1b3c1beae430d63ca924f","size":713675},
   "data/ftc/brand-2025.json.gz": {"repo":"Sejin-Koo/public-data-portal-mcp","tag":"data","asset":"ftc__brand-2025.json.gz","sha256":"e66aebd0d25159283d1d8d7ba58bab829f7313cef9542f88f77dc2aeaeaebbed","size":668727},
