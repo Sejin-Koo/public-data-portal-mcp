@@ -4,10 +4,11 @@ import assert from "node:assert/strict";
 import { splitWindows, RANGE_LIMIT_DAYS } from "../lib/scsbid_client.js";
 
 const p = (s) => Date.UTC(+s.slice(0, 4), +s.slice(4, 6) - 1, +s.slice(6, 8), +s.slice(8, 10), +s.slice(10, 12));
-const LIMIT = RANGE_LIMIT_DAYS * 86400000;
+// 원 API는 시각이 아니라 날짜(YYYYMMDD) 차이로 센다(2026-11-25 실측: 6일 23시간이어도 날짜 차 7이면 07).
+const dayDiff = (a, b) => (p(b.slice(0, 8) + "0000") - p(a.slice(0, 8) + "0000")) / 86400000;
 function check(from, to) {
   const w = splitWindows(from, to);
-  for (const x of w) assert.ok(p(x.to) - p(x.from) < LIMIT, `7일 이상 창: ${x.from}~${x.to}`);
+  for (const x of w) assert.ok(dayDiff(x.from, x.to) < RANGE_LIMIT_DAYS, `날짜 차 7일 이상 창: ${x.from}~${x.to}`);
   const asc = [...w].reverse();
   assert.equal(asc[0].from, from);
   assert.equal(asc[asc.length - 1].to, to);
@@ -24,6 +25,11 @@ assert.equal(check("202611010000", "202611172359").length, 3);
 check("202610010000", "202610312359");
 check("202608010000", "202610312359");
 assert.equal(check("202601010000", "202612312359").length, 53);
+// 2026-11-25 실측 실패 재현: 끝이 23:59가 아닌 현재 시각이면 예전 분할은 창마다 날짜 차 7이었다
+check("202611010000", "202611251332");
+check("202511250000", "202611251332");
+assert.deepEqual(splitWindows("202611181333", "202611241200"), [{ from: "202611181333", to: "202611241200" }]);
+assert.equal(check("202611171200", "202611241100").length, 2);
 // 역순·같은 시각
 assert.equal(splitWindows("202611170000", "202611100000").length, 1);
 console.log("scsbid-windows: 통과");
