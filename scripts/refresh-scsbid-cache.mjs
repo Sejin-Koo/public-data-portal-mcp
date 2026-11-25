@@ -281,7 +281,8 @@ async function getNotices(tk, yyyymm) {
   const kind = `notice-${tk}`;
   if (closedMonth(yyyymm)) {
     const c = readCache(kind, yyyymm);
-    if (c) return { ok: true, map: c.map, cached: true };
+    // 예전 코드가 07 오류를 0건으로 읽어 빈 캐시를 남겼을 수 있으므로, 비어 있는 캐시는 쓰지 않고 다시 받는다.
+    if (c && c.map && Object.keys(c.map).length) return { ok: true, map: c.map, cached: true };
   }
   const t = TYPES[tk];
   const r = await fetchMonth(B, t.notice, yyyymm, 1, `공고(${t.name})`);
@@ -305,7 +306,8 @@ async function getRegions(yyyymm) {
   const kind = "region";
   if (closedMonth(yyyymm)) {
     const c = readCache(kind, yyyymm);
-    if (c) return { ok: true, map: c.map, cached: true };
+    // 예전 코드가 07 오류를 0건으로 읽어 빈 캐시를 남겼을 수 있으므로, 비어 있는 캐시는 쓰지 않고 다시 받는다.
+    if (c && c.map && Object.keys(c.map).length) return { ok: true, map: c.map, cached: true };
   }
   const r = await fetchMonth(B, "getBidPblancListInfoPrtcptPsblRgn", yyyymm, 1, "참가가능지역");
   if (!r.ok) return { ok: false, err: r.err };
@@ -326,7 +328,8 @@ async function getLicenses(yyyymm) {
   const kind = "license";
   if (closedMonth(yyyymm)) {
     const c = readCache(kind, yyyymm);
-    if (c) return { ok: true, map: c.map, cached: true };
+    // 예전 코드가 07 오류를 0건으로 읽어 빈 캐시를 남겼을 수 있으므로, 비어 있는 캐시는 쓰지 않고 다시 받는다.
+    if (c && c.map && Object.keys(c.map).length) return { ok: true, map: c.map, cached: true };
   }
   const r = await fetchMonth(B, "getBidPblancListInfoLicenseLimit", yyyymm, 1, "면허제한");
   if (!r.ok) return { ok: false, err: r.err };
