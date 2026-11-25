@@ -1,0 +1,60 @@
+name: Refresh cntrct cache
+
+# 나라장터 계약정보 중 공동계약(컨소시엄)만 하루 단위로 모은 수집본(data/cntrct/, 릴리스 첨부) 갱신.
+# 매일 최근 7일(일요일 60일)을 다시 받고 — 계약 등록이 체결 뒤 늦게 올라오는 건이 있어서(7일 안 95%, 60일 안 99.6%) —
+# 보관 기간(이번 달 + 24개월) 중 빈 날을 최신부터 호출 예산 안에서 채운다. 일일 한도(업무구분별)에 걸리면
+# 받은 데까지 저장하고 다음 날 이어 간다.
+permissions:
+  contents: write
+
+on:
+  schedule:
+    # 매일 05:23 KST (= 20:23 UTC 전날)
+    - cron: "23 20 * * *"
+  workflow_dispatch:
+    inputs:
+      recent:
+        description: "다시 받을 최근 일수 (기본: 평일 7, 일요일 60)"
+        default: ""
+      budget:
+        description: "빈 날 채우기에 쓸 호출 수 (업무구분 합계)"
+        default: "2400"
+
+concurrency:
+  group: cntrct-cache
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+
+      - name: 데이터 받기(릴리스 첨부파일)
+        run: node scripts/release-data.mjs fetch
+
+      # 외부 패키지를 쓰지 않는다(fetch·zlib 모두 Node 내장).
+      - name: Refresh cntrct cache
+        env:
+          DATA_PORTAL_KEY: ${{ secrets.DATA_PORTAL_KEY }}
+        run: |
+          if [ -z "$DATA_PORTAL_KEY" ]; then echo "::error::DATA_PORTAL_KEY secret not set"; exit 1; fi
+          RECENT="${{ github.event.inputs.recent }}"
+          BUDGET="${{ github.event.inputs.budget }}"
+          ARGS="--budget ${BUDGET:-2400}"
+          if [ -n "$RECENT" ]; then ARGS="$ARGS --recent $RECENT"; fi
+          node scripts/refresh-cntrct-cache.mjs $ARGS
+
+      - name: 릴리스에 올리고 가리킴 커밋
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          SZ=$(du -sk data/cntrct | cut -f1)
+          scripts/commit-data-release.sh "chore: 나라장터 공동계약 수집본 자동 갱신 (data/cntrct ${SZ}KB, 릴리스 첨부)" prune:data/cntrct/ data/cntrct/*
