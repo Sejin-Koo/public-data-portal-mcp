@@ -176,7 +176,8 @@ async function callPage(base, op, params) {
   return { ok: false, code: "ERR", msg: last };
 }
 
-// 낙찰정보서비스는 2026-11-17부터 7일 이상 구간을 07(입력범위값 초과)로 거절한다
+// 낙찰정보서비스는 2026-11-17부터 7일 이상 구간을 07(입력범위값 초과)로 거절한다. 입찰공고정보서비스(공고·참가가능지역·면허제한)도
+// 1개월 구간을 07로 거절한다(실측 2026-11-25, 7일 − 1분은 통과). 그래서 모든 조회를 7일 미만 조각으로 받는다(fetchMonth 기본값)
 // (실측: 6일 23시간 59분 통과 / 정확히 7일 실패). 낙찰 조회는 한 달을 7일 미만 조각으로 나눠 받는다.
 const AWARD_SPAN_DAYS = 7;
 function splitDays(from, to, days) {
@@ -194,8 +195,8 @@ function splitDays(from, to, days) {
   return out;
 }
 
-/** 한 오퍼레이션 × 한 달 창을 끝까지 받는다. spanDays를 주면 그 일수 미만 조각으로 나눠 받는다. */
-async function fetchMonth(base, op, yyyymm, inqryDiv, label, spanDays) {
+/** 한 오퍼레이션 × 한 달 창을 끝까지 받는다. spanDays(기본 7일) 미만 조각으로 나눠 받는다. */
+async function fetchMonth(base, op, yyyymm, inqryDiv, label, spanDays = AWARD_SPAN_DAYS) {
   const { from, to } = monthRange(yyyymm);
   const parts = spanDays ? splitDays(from, to, spanDays) : [{ from, to }];
   const rows = [];
@@ -280,7 +281,8 @@ async function getNotices(tk, yyyymm) {
   const kind = `notice-${tk}`;
   if (closedMonth(yyyymm)) {
     const c = readCache(kind, yyyymm);
-    if (c) return { ok: true, map: c.map, cached: true };
+    // 예전 코드가 07 오류를 0건으로 읽어 빈 캐시를 남겼을 수 있으므로, 비어 있는 캐시는 쓰지 않고 다시 받는다.
+    if (c && c.map && Object.keys(c.map).length) return { ok: true, map: c.map, cached: true };
   }
   const t = TYPES[tk];
   const r = await fetchMonth(B, t.notice, yyyymm, 1, `공고(${t.name})`);
@@ -304,7 +306,8 @@ async function getRegions(yyyymm) {
   const kind = "region";
   if (closedMonth(yyyymm)) {
     const c = readCache(kind, yyyymm);
-    if (c) return { ok: true, map: c.map, cached: true };
+    // 예전 코드가 07 오류를 0건으로 읽어 빈 캐시를 남겼을 수 있으므로, 비어 있는 캐시는 쓰지 않고 다시 받는다.
+    if (c && c.map && Object.keys(c.map).length) return { ok: true, map: c.map, cached: true };
   }
   const r = await fetchMonth(B, "getBidPblancListInfoPrtcptPsblRgn", yyyymm, 1, "참가가능지역");
   if (!r.ok) return { ok: false, err: r.err };
@@ -325,7 +328,8 @@ async function getLicenses(yyyymm) {
   const kind = "license";
   if (closedMonth(yyyymm)) {
     const c = readCache(kind, yyyymm);
-    if (c) return { ok: true, map: c.map, cached: true };
+    // 예전 코드가 07 오류를 0건으로 읽어 빈 캐시를 남겼을 수 있으므로, 비어 있는 캐시는 쓰지 않고 다시 받는다.
+    if (c && c.map && Object.keys(c.map).length) return { ok: true, map: c.map, cached: true };
   }
   const r = await fetchMonth(B, "getBidPblancListInfoLicenseLimit", yyyymm, 1, "면허제한");
   if (!r.ok) return { ok: false, err: r.err };
