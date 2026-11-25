@@ -17,8 +17,8 @@ on:
         description: "다시 받을 최근 일수 (기본: 평일 7, 일요일 60)"
         default: ""
       budget:
-        description: "빈 날 채우기에 쓸 호출 수 (업무구분 합계)"
-        default: "2400"
+        description: "빈 날 채우기에 쓸 호출 수 (업무구분마다)"
+        default: "800"
 
 concurrency:
   group: cntrct-cache
@@ -48,7 +48,7 @@ jobs:
           if [ -z "$DATA_PORTAL_KEY" ]; then echo "::error::DATA_PORTAL_KEY secret not set"; exit 1; fi
           RECENT="${{ github.event.inputs.recent }}"
           BUDGET="${{ github.event.inputs.budget }}"
-          ARGS="--budget ${BUDGET:-2400}"
+          ARGS="--budget ${BUDGET:-800}"
           if [ -n "$RECENT" ]; then ARGS="$ARGS --recent $RECENT"; fi
           node scripts/refresh-cntrct-cache.mjs $ARGS
 
