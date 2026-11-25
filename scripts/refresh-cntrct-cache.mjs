@@ -66,7 +66,11 @@ const SUNDAY = NOW.getUTCDay() === 0;
 const RECENT = Number(argVal("--recent", SUNDAY ? 60 : 7));
 // 빈 날 채우기에 쓸 호출 수 — 업무구분마다 따로 센다(일일 한도가 업무구분(오퍼레이션)별 1,000회라서).
 // 첫 실행(2026-11-25)에서 합계로 셌더니 하루 1회면 되는 외자가 예산을 다 써 용역·공사는 24일만 채웠다.
-const BUDGET = Number(argVal("--budget", 800));
+// 같은 키를 실시간 조회 도구(get_narajangteo_contract 공고번호 조회 등)도 쓰므로, 수집이 하루 한도를 다 쓰면
+// 그날 실시간 조회가 429로 막힌다(2026-11-25 첫 채우기 날 실측 — 용역 공고번호 조회 7회가 모두 429).
+// → 채우기는 업무구분마다 500회, 최근 재수신을 합친 하루 총량은 650회로 막아 실시간 몫을 남긴다.
+const BUDGET = Number(argVal("--budget", 500));
+const CAP = Number(argVal("--cap", 650)); // 업무구분별 이번 실행 총 호출 상한(최근 재수신 + 채우기)
 const MAX_MIN = Number(argVal("--max-minutes", 270));
 const FROM = argVal("--from", null);
 const TO = argVal("--to", null);
@@ -228,6 +232,7 @@ const fillCalls = {};
 await Promise.all(TYPES.map(async (type) => {
   for (const task of tasks.filter((x) => x.type === type)) {
     if (limited.has(type)) { stat.한도++; continue; }
+    if ((calls[type] || 0) >= CAP) { stat.예산초과++; continue; }
     if (timeUp()) { stat.예산초과++; continue; }
     if (task.kind === "채우기" && (fillCalls[type] || 0) >= BUDGET) { stat.예산초과++; continue; }
     const before = calls[type] || 0;
