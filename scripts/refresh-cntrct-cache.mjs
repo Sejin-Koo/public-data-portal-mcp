@@ -64,7 +64,9 @@ const kstNow = () => new Date(Date.now() + 9 * 3600 * 1000);
 const NOW = kstNow();
 const SUNDAY = NOW.getUTCDay() === 0;
 const RECENT = Number(argVal("--recent", SUNDAY ? 60 : 7));
-const BUDGET = Number(argVal("--budget", 2400)); // 빈 날 채우기에 쓸 호출 수(업무구분 합계)
+// 빈 날 채우기에 쓸 호출 수 — 업무구분마다 따로 센다(일일 한도가 업무구분(오퍼레이션)별 1,000회라서).
+// 첫 실행(2026-11-25)에서 합계로 셌더니 하루 1회면 되는 외자가 예산을 다 써 용역·공사는 24일만 채웠다.
+const BUDGET = Number(argVal("--budget", 800));
 const MAX_MIN = Number(argVal("--max-minutes", 270));
 const FROM = argVal("--from", null);
 const TO = argVal("--to", null);
@@ -221,17 +223,16 @@ if (FROM) {
 // ── 실행 ────────────────────────────────────────────────────────────────────
 const stat = { 최근: 0, 채우기: 0, 지정: 0, 실패: 0, 한도: 0, 예산초과: 0 };
 const failures = [];
-let fillCalls = 0;
-const totalCalls = () => Object.values(calls).reduce((a, b) => a + b, 0);
+const fillCalls = {};
 // 업무구분마다 따로 차례를 돈다(한도가 업무구분별이라 한쪽이 막혀도 다른 쪽은 계속).
 await Promise.all(TYPES.map(async (type) => {
   for (const task of tasks.filter((x) => x.type === type)) {
     if (limited.has(type)) { stat.한도++; continue; }
     if (timeUp()) { stat.예산초과++; continue; }
-    if (task.kind === "채우기" && fillCalls >= BUDGET) { stat.예산초과++; continue; }
-    const before = totalCalls();
+    if (task.kind === "채우기" && (fillCalls[type] || 0) >= BUDGET) { stat.예산초과++; continue; }
+    const before = calls[type] || 0;
     const r = await fetchDay(type, task.day);
-    if (task.kind === "채우기") fillCalls += totalCalls() - before;
+    if (task.kind === "채우기") fillCalls[type] = (fillCalls[type] || 0) + (calls[type] || 0) - before;
     if (r.ok) stat[task.kind]++;
     else if (r.err === "RATELIMIT") stat.한도++;
     else { stat.실패++; failures.push(`${task.day} ${type}: ${r.err}`); }
