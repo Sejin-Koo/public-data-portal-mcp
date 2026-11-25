@@ -176,7 +176,8 @@ async function callPage(base, op, params) {
   return { ok: false, code: "ERR", msg: last };
 }
 
-// 낙찰정보서비스는 2026-11-17부터 7일 이상 구간을 07(입력범위값 초과)로 거절한다
+// 낙찰정보서비스는 2026-11-17부터 7일 이상 구간을 07(입력범위값 초과)로 거절한다. 입찰공고정보서비스(공고·참가가능지역·면허제한)도
+// 1개월 구간을 07로 거절한다(실측 2026-11-25, 7일 − 1분은 통과). 그래서 모든 조회를 7일 미만 조각으로 받는다(fetchMonth 기본값)
 // (실측: 6일 23시간 59분 통과 / 정확히 7일 실패). 낙찰 조회는 한 달을 7일 미만 조각으로 나눠 받는다.
 const AWARD_SPAN_DAYS = 7;
 function splitDays(from, to, days) {
@@ -194,8 +195,8 @@ function splitDays(from, to, days) {
   return out;
 }
 
-/** 한 오퍼레이션 × 한 달 창을 끝까지 받는다. spanDays를 주면 그 일수 미만 조각으로 나눠 받는다. */
-async function fetchMonth(base, op, yyyymm, inqryDiv, label, spanDays) {
+/** 한 오퍼레이션 × 한 달 창을 끝까지 받는다. spanDays(기본 7일) 미만 조각으로 나눠 받는다. */
+async function fetchMonth(base, op, yyyymm, inqryDiv, label, spanDays = AWARD_SPAN_DAYS) {
   const { from, to } = monthRange(yyyymm);
   const parts = spanDays ? splitDays(from, to, spanDays) : [{ from, to }];
   const rows = [];
