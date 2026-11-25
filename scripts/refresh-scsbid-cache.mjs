@@ -151,10 +151,19 @@ async function callPage(base, op, params) {
         await sleep(2000 * (attempt + 1));
         continue;
       }
-      const code = String(j?.response?.header?.resultCode ?? "").padStart(2, "0");
+      // 오류 응답은 response.header가 아니라 최상위 "nkoneps.com.response.ResponseError".header로 온다(실측 2026-11-25:
+      // 7일 이상 구간 → 07). 예전 코드는 header를 못 찾으면 ""를 "00"으로 채워 0건 정상으로 읽었다 — 11-16 낙찰 갱신이
+      // 9~11월 창을 0행으로 덮은 원인. header가 없으면 오류로 다룬다.
+      const hdr = j?.response?.header ?? j?.["nkoneps.com.response.ResponseError"]?.header;
+      if (!hdr || hdr.resultCode === undefined || hdr.resultCode === null || hdr.resultCode === "") {
+        last = `응답 머리 없음: ${text.slice(0, 120)}`;
+        await sleep(2000 * (attempt + 1));
+        continue;
+      }
+      const code = String(hdr.resultCode).padStart(2, "0");
       if (code === "03") return { ok: true, items: [], total: 0 };
       if (code !== "00") {
-        last = `resultCode ${code} ${j?.response?.header?.resultMsg ?? ""}`;
+        last = `resultCode ${code} ${hdr.resultMsg ?? ""}`;
         await sleep(2000 * (attempt + 1));
         continue;
       }
@@ -471,8 +480,21 @@ await pool(
         cols: COLS,
         rows,
       };
+      // 이미 받은 창보다 행이 크게 줄면 덮지 않는다(원 API 이상·창 실패가 0건 정상으로 보이는 경우 대비).
+      // 낙찰 등록은 늘기만 하므로 정상 재수집에서 행이 절반 아래로 줄 일은 없다.
+      const outPath = join(OUT_DIR, `${tk}-${w}.json.gz`);
+      if (existsSync(outPath)) {
+        let prevRows = 0;
+        try {
+          prevRows = JSON.parse(gunzipSync(readFileSync(outPath)).toString("utf-8")).rows.length;
+        } catch {}
+        if (prevRows >= 100 && rows.length < prevRows * 0.5) {
+          failures.push(`낙찰(${t.name}) ${w}: 행이 ${prevRows} → ${rows.length}로 급감해 덮지 않음`);
+          return;
+        }
+      }
       const buf = gzipSync(Buffer.from(JSON.stringify(payload)), { level: 9 });
-      writeFileSync(join(OUT_DIR, `${tk}-${w}.json.gz`), buf);
+      writeFileSync(outPath, buf);
       written.push(`${t.name} ${w}: ${rows.length}건, 공고연결 ${joined} · 주공종 ${withMain} · 참가가능지역 ${withRgn} · 면허제한 ${withLic}, ${(buf.length / 1024).toFixed(0)}KB`);
     })
   ),
@@ -528,4 +550,5 @@ for (const s of removed) console.log("삭제 " + s);
 console.log(`원천 호출 수: ${JSON.stringify(callCount)}`);
 console.log(`data/scsbid 합계: ${(bytes / 1024 / 1024).toFixed(2)} MB`);
 if (rateLimited) console.log("::warning::요청한도(429)에 걸려 일부를 받지 못했습니다. 받은 창만 저장했습니다.");
+if (failures.length) console.log(`::warning::실패한 창 ${failures.length}개 — 기존 파일을 그대로 두었습니다: ${failures.join(" / ")}`);
 if (failures.length && !written.length) process.exit(1);

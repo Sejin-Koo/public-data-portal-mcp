@@ -159,14 +159,23 @@ async function callPage(type, day, pageNo) {
         await sleep(2000 * (attempt + 1));
         continue;
       }
-      const code = String(j?.response?.header?.resultCode ?? "").padStart(2, "0");
+      // 오류 응답은 response.header가 아니라 최상위 "nkoneps.com.response.ResponseError".header로 온다(실측 2026-11-25:
+      // 7일 이상 구간 → 07). 예전 코드는 header를 못 찾으면 ""를 "00"으로 채워 0건 정상으로 읽었다 — 11-16 낙찰 갱신이
+      // 9~11월 창을 0행으로 덮은 원인. header가 없으면 오류로 다룬다.
+      const hdr = j?.response?.header ?? j?.["nkoneps.com.response.ResponseError"]?.header;
+      if (!hdr || hdr.resultCode === undefined || hdr.resultCode === null || hdr.resultCode === "") {
+        last = `응답 머리 없음: ${text.slice(0, 120)}`;
+        await sleep(2000 * (attempt + 1));
+        continue;
+      }
+      const code = String(hdr.resultCode).padStart(2, "0");
       if (code === "03") return { ok: true, items: [], total: 0 };
       if (code === "22") {
         limited.add(type);
         return { ok: false, code: "RATELIMIT" };
       }
       if (code !== "00") {
-        last = `resultCode ${code} ${j?.response?.header?.resultMsg ?? ""}`;
+        last = `resultCode ${code} ${hdr.resultMsg ?? ""}`;
         await sleep(2000 * (attempt + 1));
         continue;
       }
