@@ -1,0 +1,60 @@
+name: Refresh vehicle cache
+
+# 한국교통안전공단 신규등록(15059401) 월별 수집본(data/vehicle/, 릴리스 첨부) 갱신.
+# 차종×등록지역×사용연료 칸을 달마다 한 번 받아, 조회 도구가 원 API를 부르지 않고 답하게 한다.
+# 이 API의 일일 허용량은 3,000회(계정 공유)이므로 한 번 실행에 --budget(기본 1700, 두 달)까지만 쓴다.
+# 빈 달이 없으면 호출 없이 끝난다(한 달 808회 — 새 달은 매월 2일 이후 첫 실행에서 받음).
+permissions:
+  contents: write
+
+on:
+  schedule:
+    # 매일 04:41 KST (= 19:41 UTC 전날)
+    - cron: "41 19 * * *"
+  workflow_dispatch:
+    inputs:
+      budget:
+        description: "이번 실행에 쓸 원 API 호출 수 (기본 1700, 한 달 808)"
+        default: ""
+      month:
+        description: "지정 달만 다시 받기 YYYYMM (비우면 자동)"
+        default: ""
+
+concurrency:
+  group: vehicle-cache
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+
+      - name: 데이터 받기(릴리스 첨부파일)
+        run: node scripts/release-data.mjs fetch
+
+      # 외부 패키지를 쓰지 않는다(fetch 내장).
+      - name: Refresh vehicle cache
+        env:
+          DATA_PORTAL_KEY: ${{ secrets.DATA_PORTAL_KEY }}
+        run: |
+          if [ -z "$DATA_PORTAL_KEY" ]; then echo "::error::DATA_PORTAL_KEY secret not set"; exit 1; fi
+          BUDGET="${{ github.event.inputs.budget }}"
+          MONTH="${{ github.event.inputs.month }}"
+          ARGS="--budget ${BUDGET:-1700}"
+          if [ -n "$MONTH" ]; then ARGS="$ARGS --month $MONTH"; fi
+          node scripts/refresh-vehicle-cache.mjs $ARGS
+
+      - name: 릴리스에 올리고 가리킴 커밋
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          SZ=$(du -sk data/vehicle | cut -f1)
+          scripts/commit-data-release.sh "chore: 자동차 신규등록 수집본 자동 갱신 (data/vehicle ${SZ}KB, 릴리스 첨부)" prune:data/vehicle/ data/vehicle/*
